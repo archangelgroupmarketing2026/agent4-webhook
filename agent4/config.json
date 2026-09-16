@@ -1,0 +1,188 @@
+{
+  "location_id": "l1d7nflxbC8vLMR1KuMa",
+  "legal_auth_id": "MONG-ACK-2026-09-11",
+  "source_pipeline": {
+    "id": "TeugJntwERU9unSuW1xb",
+    "name": "Meta Ads Campaign-SMC Leads-2026",
+    "new_lead_stage_id": "b8ac0053-c38e-4974-906b-4b66c67f9097"
+  },
+  "target_pipeline": {
+    "id": "ecXeUpAZ6bGrvkMr9gKx",
+    "name": "AI Autopilot SMC Meta Leads 2026-New",
+    "created_at": "2026-09-11T17:13:44.231Z",
+    "stages": {
+      "New Lead": "9cedc993-da22-4161-883a-0788d2bd6c40",
+      "Call Scheduled / Dialing": "cc44f8bb-4550-41da-a2ae-9c70f9c085b8",
+      "Contact Attempt 1 - SMS Sent": "feea2f9d-1dea-444e-9a72-124e9428ec16",
+      "Contact Attempt 2 - Retry": "01052bf2-0bea-4aef-8b3f-5b6e27eb31c1",
+      "Contact Attempt 3 - Final": "b277f695-094b-4ec9-9e3c-750b69b62ca6",
+      "Call Back Later": "542d1af3-534b-407d-8a22-8c2bca71e04c",
+      "SMC Lead - SMS Responded (High Intent)": "c0a85214-2838-4bfa-80bb-b2d45e13f4b9",
+      "VA Standard Rating Increase Review": "9e4106a9-3bb7-4247-92cf-32a00417e78d",
+      "SMC Qualified - Schedule Consult": "65b8b1e0-33b1-424d-b6e0-c56b272af675",
+      "Appointment Booked": "85e23915-6280-4c73-b114-0faf0df7bde8",
+      "Case Accepted": "9d75bc4a-4ae1-459d-856c-15914ea44080",
+      "Case Rejected": "46f862f2-df4b-4709-b963-81164af4ba0a",
+      "Not Qualified / Archived": "d789fe59-79dd-45fe-a3dc-302cff46150a",
+      "Do Not Contact / Dead": "c60efe7e-ff62-4890-b49c-d572e0a6d305",
+      "Backlog Aged (>90d, Manual)": "8dc8ed7f-1628-4bb9-935f-683d90df78af"
+    }
+  },
+  "retell": {
+    "michelle_agent_id": "agent_a5897edeb8b947caac8a877e62",
+    "from_number": "+18136095500",
+    "from_number_status": "PENDING_PURCHASE"
+  },
+  "custom_fields": {
+    "claimed_conditions": {
+      "key": "contact.what_conditions_do_you_want_to_get_service_connected",
+      "id": "Cb7Hl6V2xocc5ZhVaCME",
+      "type": "LARGE_TEXT"
+    },
+    "va_rating": {
+      "key": "contact.what_are_your_service_connected_conditions_and_their_rating",
+      "id": "Nn64xBYSwYmegERyzVcl",
+      "type": "LARGE_TEXT"
+    },
+    "housebound_indicator": {
+      "key": "contact.are_you_physically_unable_to_leave_your_home_for_work_or_medical_appointments_due_to_your_serviceconnected_disabilities",
+      "id": "FbM0DRLoeBOEz87SoseO",
+      "type": "LARGE_TEXT"
+    },
+    "intake_completed_at": {
+      "key": "contact.intake_completed_at",
+      "id": "TODO_DAX_TO_CREATE",
+      "type": "DATE",
+      "note": "Populated by GHL workflow when a lead submits form qedI4Yz2L6dQAycOORd9 (SDR) or j8aIS21kKrX6Wbowjklm (Website)."
+    },
+    "rating_decision_uploaded_at": {
+      "key": "contact.rating_decision_uploaded_at",
+      "id": "TODO_DAX_TO_CREATE",
+      "type": "DATE",
+      "note": "Populated by GHL workflow when a lead submits form a3VxDFJV8OodEJ23T8BB (Veterans Law - Rating Upload)."
+    },
+    "intake_status": {
+      "key": "contact.intake_status",
+      "id": "TODO_DAX_TO_CREATE",
+      "type": "SINGLE_OPTIONS",
+      "options": ["Not Started", "Sent", "Completed"],
+      "note": "Scanner writes 'Sent' when it dispatches the intake link. GHL workflow flips to 'Completed' on submit."
+    },
+    "rating_decision_status": {
+      "key": "contact.rating_decision_status",
+      "id": "TODO_DAX_TO_CREATE",
+      "type": "SINGLE_OPTIONS",
+      "options": ["Not Requested", "Requested", "Uploaded"],
+      "note": "Scanner writes 'Requested' when it dispatches the upload link. GHL workflow flips to 'Uploaded' on submit."
+    }
+  },
+  "reply_router": {
+    "links": {
+      "intake_form": "https://tinyurl.com/bdhvvxbb",
+      "intake_form_destination": "https://lonettolaw.com/veterans-disability-questionnaire/",
+      "rating_upload": "https://tinyurl.com/fe4jxsm6",
+      "rating_upload_destination": "https://lonettolawvaconsult.com/upload-your-va-rating-decision"
+    },
+    "landing_stages": {
+      "state_1_intake_sent": {
+        "name": "Intake Form Sent",
+        "id": "TODO_DAX_TO_CREATE",
+        "note": "POSITIVE reply, no intake_completed_at on file."
+      },
+      "state_2_rating_requested": {
+        "name": "Rating Decision Requested",
+        "id": "TODO_DAX_TO_CREATE",
+        "note": "POSITIVE reply, intake_completed_at IS NOT NULL, rating_decision_uploaded_at IS NULL."
+      },
+      "state_3_ready_for_consult": {
+        "name": "SMC Qualified - Schedule Consult",
+        "id": "65b8b1e0-33b1-424d-b6e0-c56b272af675",
+        "note": "POSITIVE reply, both timestamps present. Uses existing stage."
+      },
+      "other_reply_human_review": {
+        "name": "SMS Reply - Human Review",
+        "id": "TODO_DAX_TO_CREATE",
+        "note": "OTHER reply (ambiguous). Michelle or Dax's team reads before any auto-send."
+      }
+    },
+    "human_review_note_template": "Ambiguous SMS reply from {contact_name}: \"{reply_body}\". Auto-router paused; human review required."
+  },
+  "guardrails": {
+    "day1_dial_cap": 10,
+    "day1_sms_cap": 25,
+    "concurrency_cap": 1,
+    "pace_seconds_between_dials": 60,
+    "calling_window_local": {
+      "start": "09:00",
+      "end": "18:30"
+    },
+    "attempt_limit_per_7d": 3,
+    "dial_age_cutoff_days": 90
+  },
+  "scheduled_start": "2026-09-14T11:00:00-04:00",
+  "document_tracking": {
+    "ghl_forms": {
+      "va_questionnaire_sdr": {
+        "id": "qedI4Yz2L6dQAycOORd9",
+        "name": "Veterans Disability Questionnaire - SDR",
+        "role": "questionnaire_intake",
+        "target_stage": "SMC Qualified - Schedule Consult",
+        "target_stage_id": "65b8b1e0-33b1-424d-b6e0-c56b272af675",
+        "trigger_logic": "fire on first submission; no field-content check"
+      },
+      "va_questionnaire_website": {
+        "id": "j8aIS21kKrX6Wbowjklm",
+        "name": "Veterans Disability Questionnaire - Website",
+        "role": "questionnaire_intake",
+        "note": "Alternate variant; wire only if user confirms website leads flow into this pipeline"
+      },
+      "va_rating_upload": {
+        "id": "a3VxDFJV8OodEJ23T8BB",
+        "name": "Veterans Law - Rating Upload",
+        "role": "rating_decision_upload",
+        "target_stage": "VA Standard Rating Increase Review",
+        "target_stage_id": "9e4106a9-3bb7-4247-92cf-32a00417e78d",
+        "trigger_logic": "fire on first submission"
+      },
+      "va_funnel_intake": {
+        "id": "n9o2gAgtudE2EpY4D7QZ",
+        "name": "Veterans Law - Funnel",
+        "role": "funnel_intake",
+        "note": "Top-of-funnel form; likely already creating leads in source pipeline. Do NOT wire as auto-move."
+      },
+      "va_rep_forms": {
+        "id": "376EwsV7NAaQqasVm0i3",
+        "name": "VA REP Forms",
+        "role": "representative_paperwork",
+        "note": "Purpose unclear from name; user to clarify before wiring"
+      }
+    },
+    "jotform": {
+      "role": "authoritative_contract",
+      "target_stage": "Case Accepted",
+      "target_stage_id": "9d75bc4a-4ae1-459d-856c-15914ea44080",
+      "api_credential": "custom-cred:api.jotform.com",
+      "api_status": "CONNECTED",
+      "contract_forms": {
+        "va_rep_forms_primary": {
+          "id": "222288181385057",
+          "name": "VA Rep Forms",
+          "structure": "57 questions incl. retainer agreement + VA 21-22 appointment of rep",
+          "active": true,
+          "last_submission_seen": "2026-09-11"
+        },
+        "va_rep_forms_30": {
+          "id": "241725938230154",
+          "name": "VA Rep Forms (30)",
+          "structure": "56 questions, minor variant of primary",
+          "active": true,
+          "last_submission_seen": "2026-09-05"
+        }
+      },
+      "trigger_logic": "first-submission-wins across both form IDs",
+      "ssa_fee_agreement_id": "250057133458050",
+      "ssa_fee_agreement_note": "Social Security only, ignore for VA pipeline"
+    },
+    "ghl_contract_form_status": "IGNORED (JotForm is authoritative per user 2026-09-11)"
+  }
+}

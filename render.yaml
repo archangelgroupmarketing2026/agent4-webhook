@@ -1,0 +1,32 @@
+# Render Blueprint for the Agent 4 webhook receiver.
+# Docs: https://render.com/docs/blueprint-spec
+#
+# To deploy:
+#   1. Push this repo to GitHub
+#   2. In Render dashboard, click "New" -> "Blueprint" -> connect the repo
+#   3. Render reads this file and provisions the service
+#   4. Set GHL_PIT and GHL_LOCATION_ID in the Environment tab (Secrets)
+#
+# See DEPLOY.md for full step-by-step instructions.
+
+services:
+  - type: web
+    name: agent4-webhook-receiver
+    runtime: python
+    region: ohio           # US-Central, low latency to Twilio/GHL infra
+    plan: starter          # $7/mo, always-on. Do NOT use free tier for webhooks.
+    branch: main
+    buildCommand: pip install -r requirements.txt
+    startCommand: gunicorn app:app --bind 0.0.0.0:$PORT --workers 2 --threads 4 --timeout 60 --access-logfile - --error-logfile -
+    healthCheckPath: /health
+    autoDeploy: true       # Deploy on every push to main
+    envVars:
+      - key: PYTHON_VERSION
+        value: "3.12.5"
+      - key: LOG_LEVEL
+        value: INFO
+      # These MUST be set in the Render dashboard, not committed here:
+      - key: GHL_PIT
+        sync: false        # Prompt in dashboard; never write to repo.
+      - key: GHL_LOCATION_ID
+        sync: false        # Prompt in dashboard.
