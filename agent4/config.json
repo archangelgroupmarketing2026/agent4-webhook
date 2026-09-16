@@ -51,26 +51,26 @@
     },
     "intake_completed_at": {
       "key": "contact.intake_completed_at",
-      "id": "TODO_DAX_TO_CREATE",
+      "id": "oz6Wt4FwNTxmayD9ucN5",
       "type": "DATE",
       "note": "Populated by GHL workflow when a lead submits form qedI4Yz2L6dQAycOORd9 (SDR) or j8aIS21kKrX6Wbowjklm (Website)."
     },
     "rating_decision_uploaded_at": {
       "key": "contact.rating_decision_uploaded_at",
-      "id": "TODO_DAX_TO_CREATE",
+      "id": "gDuvOYQ4T2pJm9245NkY",
       "type": "DATE",
       "note": "Populated by GHL workflow when a lead submits form a3VxDFJV8OodEJ23T8BB (Veterans Law - Rating Upload)."
     },
     "intake_status": {
       "key": "contact.intake_status",
-      "id": "TODO_DAX_TO_CREATE",
+      "id": "TODypCbp6BcaOW0TPe3W",
       "type": "SINGLE_OPTIONS",
       "options": ["Not Started", "Sent", "Completed"],
       "note": "Scanner writes 'Sent' when it dispatches the intake link. GHL workflow flips to 'Completed' on submit."
     },
     "rating_decision_status": {
       "key": "contact.rating_decision_status",
-      "id": "TODO_DAX_TO_CREATE",
+      "id": "cPKvxT8lLtt37c4QmzMN",
       "type": "SINGLE_OPTIONS",
       "options": ["Not Requested", "Requested", "Uploaded"],
       "note": "Scanner writes 'Requested' when it dispatches the upload link. GHL workflow flips to 'Uploaded' on submit."
@@ -86,12 +86,12 @@
     "landing_stages": {
       "state_1_intake_sent": {
         "name": "Intake Form Sent",
-        "id": "TODO_DAX_TO_CREATE",
+        "id": "9cc47b76-29d0-4200-90a0-7b14ec3c3cd7",
         "note": "POSITIVE reply, no intake_completed_at on file."
       },
       "state_2_rating_requested": {
         "name": "Rating Decision Requested",
-        "id": "TODO_DAX_TO_CREATE",
+        "id": "3d946961-27f1-4c06-b169-0e9d637d96cb",
         "note": "POSITIVE reply, intake_completed_at IS NOT NULL, rating_decision_uploaded_at IS NULL."
       },
       "state_3_ready_for_consult": {
@@ -101,7 +101,7 @@
       },
       "other_reply_human_review": {
         "name": "SMS Reply - Human Review",
-        "id": "TODO_DAX_TO_CREATE",
+        "id": "e8a05a4f-aea6-4476-96ce-7d3770aaefc7",
         "note": "OTHER reply (ambiguous). Michelle or Dax's team reads before any auto-send."
       }
     },
