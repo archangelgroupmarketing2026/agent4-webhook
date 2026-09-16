@@ -30,8 +30,10 @@
   },
   "retell": {
     "michelle_agent_id": "agent_a5897edeb8b947caac8a877e62",
-    "from_number": "+18136095500",
-    "from_number_status": "PENDING_PURCHASE"
+    "from_number": "+16562213153",
+    "from_number_status": "ACTIVE",
+    "webhook_url": "https://agent4-webhook-receiver.onrender.com/webhooks/retell/call-ended",
+    "webhook_events": ["call_started", "call_ended", "call_analyzed"]
   },
   "custom_fields": {
     "claimed_conditions": {
