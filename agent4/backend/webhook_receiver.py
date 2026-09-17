@@ -187,10 +187,11 @@ def decide_stage_move(outcome: str,
     Target pipeline: AI Autopilot SMC Meta Leads 2026-New
 
     Rules:
+      ANSWERED + declined_request == True            -> Not Qualified / Archived (highest priority)
       ANSWERED + intake_completion=='complete'       -> SMC Qualified - Schedule Consult
       ANSWERED + requested_callback == True          -> Call Back Later
       ANSWERED + intake_completion=='partial'        -> SMC Lead - SMS Responded (High Intent)
-      ANSWERED + intake_completion=='refused'        -> Call Back Later
+      ANSWERED + intake_completion=='refused'        -> Not Qualified / Archived
       ANSWERED + intake_completion=='transferred'    -> SMC Lead - SMS Responded (High Intent)
       ANSWERED + short/no engagement                 -> Contact Attempt 2 - Retry
       ANSWERED + engaged but no analysis available   -> SMC Lead - SMS Responded (High Intent) (safe human review path)
@@ -207,6 +208,10 @@ def decide_stage_move(outcome: str,
         if analysis_data:
             completion = (analysis_data.get("intake_completion") or "").lower()
             requested_cb = bool(analysis_data.get("requested_callback"))
+            declined = bool(analysis_data.get("declined_request"))
+            # Declined always wins — must not be called again.
+            if declined:
+                return stage("Not Qualified / Archived"), "veteran declined — do not re-contact"
             if completion == "complete":
                 return stage("SMC Qualified - Schedule Consult"), "intake completed"
             if requested_cb:
@@ -214,7 +219,7 @@ def decide_stage_move(outcome: str,
             if completion == "partial":
                 return stage("SMC Lead - SMS Responded (High Intent)"), "partial intake — human review"
             if completion == "refused":
-                return stage("Call Back Later"), "veteran refused intake"
+                return stage("Not Qualified / Archived"), "veteran refused intake"
             if completion == "transferred":
                 return stage("SMC Lead - SMS Responded (High Intent)"), "transferred to human intake"
             if completion == "no_engagement":
