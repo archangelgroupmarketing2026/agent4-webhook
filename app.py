@@ -119,7 +119,8 @@ def ghl_inbound_sms():
 @app.route("/webhooks/retell/call-ended", methods=["POST"])
 def retell_call_ended():
     payload = request.get_json(force=True, silent=True) or {}
-    result = handle_retell_call_ended(payload)
+    client = _make_client()
+    result = handle_retell_call_ended(payload, client=client)
     try:
         _append_event("retell_call_ended", payload, result)
     except Exception:  # noqa: BLE001
