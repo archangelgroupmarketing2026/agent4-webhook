@@ -146,8 +146,24 @@ RETELL_OUTCOME_MAP = {
 }
 
 
-def map_retell_outcome(disconnect_reason: str) -> str:
-    return RETELL_OUTCOME_MAP.get(disconnect_reason, "FAILED")
+def map_retell_outcome(disconnect_reason: str,
+                       call_analysis: Optional[dict] = None) -> str:
+    """Map Retell disconnect_reason to our outcome enum.
+
+    Also inspects call_analysis.call_summary to catch Retell's mislabeled
+    voicemails (agent_hangup on a machine pickup). Retell often emits
+    disconnection_reason='agent_hangup' or 'user_hangup' with duration ~30-45s
+    when Ava left a message on a machine; the summary reliably contains
+    'voicemail' or 'answering machine' in that case.
+    """
+    base = RETELL_OUTCOME_MAP.get(disconnect_reason, "FAILED")
+    if base == "ANSWERED" and call_analysis:
+        summary = (call_analysis.get("call_summary") or "").lower()
+        if any(kw in summary for kw in
+               ("voicemail", "answering machine", "voice mail",
+                "left a message", "left a brief message")):
+            return "VOICEMAIL"
+    return base
 
 
 # ---------------------------------------------------------------------------
@@ -347,12 +363,20 @@ def handle_ghl_inbound_sms(payload: dict,
             "router_result": router_result}
 
 
+PROCESSED_CALLS_PATH = ROOT / "data" / "_processed_calls.json"
+
+
 def handle_retell_call_ended(payload: dict,
                               client: Optional[Any] = None) -> dict:
     """Handle Retell call-ended webhook.
 
     Now performs the full pipeline: record outcome, format & post GHL note,
     and move the opportunity tile.
+
+    Idempotency: Retell delivers several webhooks per call
+    (call_started -> call_ended -> call_analyzed). We only act when the
+    payload carries an analyzed call, and we dedupe by call_id so retries
+    from Retell don't cause duplicate GHL writes.
     """
     call = payload.get("call") or payload
     meta = call.get("metadata") or {}
@@ -360,11 +384,50 @@ def handle_retell_call_ended(payload: dict,
     contact_id = meta.get("ghl_contact_id")
     disconnect_reason = call.get("disconnection_reason") or "error_unknown"
     duration_ms = call.get("duration_ms") or 0
+    call_id = call.get("call_id") or payload.get("call_id")
+    event = payload.get("event") or call.get("event") or ""
+    call_status = call.get("call_status") or ""
+    call_analysis = call.get("call_analysis") or {}
 
     if not opp_id:
         return {"ok": False, "error": "missing_ghl_opp_id_in_metadata"}
 
-    outcome = map_retell_outcome(disconnect_reason)
+    # Idempotency + event gating.
+    # Only act once per call_id, and only when the call is truly finished
+    # and analysis is present (Retell emits 3 webhook events per call).
+    # We accept the first webhook where both:
+    #    call_status == 'ended' AND call_analysis is non-empty
+    # Or event == 'call_analyzed'. Otherwise we just log and return early.
+    is_final = (event == "call_analyzed") or (
+        call_status == "ended" and bool(call_analysis))
+
+    if call_id:
+        try:
+            processed = _load_json(PROCESSED_CALLS_PATH, {})
+        except Exception:
+            processed = {}
+
+        if call_id in processed:
+            return {"ok": True, "skipped": "already_processed",
+                    "call_id": call_id, "opp_id": opp_id,
+                    "first_processed_at": processed.get(call_id, {}).get("at")}
+
+        if not is_final:
+            return {"ok": True, "skipped": "waiting_for_final_event",
+                    "call_id": call_id, "opp_id": opp_id,
+                    "event": event, "call_status": call_status,
+                    "has_analysis": bool(call_analysis)}
+
+        # Reserve this call_id BEFORE doing GHL writes so a concurrent retry
+        # from Retell can't double-post.
+        processed[call_id] = {"at": datetime.now(timezone.utc).isoformat(),
+                              "opp_id": opp_id}
+        try:
+            _save_atomic(PROCESSED_CALLS_PATH, processed)
+        except Exception:
+            log.exception("could not persist processed_calls")
+
+    outcome = map_retell_outcome(disconnect_reason, call_analysis)
     now = datetime.now(timezone.utc)
 
     # 1. Update local attempts.json (existing behavior)
@@ -387,7 +450,7 @@ def handle_retell_call_ended(payload: dict,
 
     # 3. Build the note (always post — bug #6 fix)
     stage_id, stage_reason = decide_stage_move(outcome, duration_ms,
-                                                call.get("call_analysis"),
+                                                call_analysis,
                                                 cfg)
     note_body = format_intake_note(call, outcome, stage_reason)
 
